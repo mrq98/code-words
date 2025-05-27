@@ -3,6 +3,7 @@ package com.mrqtech.code_words.service;
 
 
 import com.mrqtech.code_words.exception.GameAlreadyFinishedException;
+import com.mrqtech.code_words.exception.InvalidGameException;
 import com.mrqtech.code_words.model.Difficulty;
 import com.mrqtech.code_words.model.Game;
 import com.mrqtech.code_words.model.Status;
@@ -172,6 +173,17 @@ class GameServiceTest {
     }
 
     @Test
+    void processGuess_invalidGameAccess() {
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
+
+        InvalidGameException exception = assertThrows(InvalidGameException.class,
+                () -> gameService.processGuess(new GuessRequest(1L, "h", "nonGameCreatorUsername")));
+
+        assertEquals("Can't access this game.", exception.getMessage());
+    }
+
+
+    @Test
     void getGameById_success() {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
 
@@ -215,6 +227,16 @@ class GameServiceTest {
                 () -> gameService.forfeitGame(new ForfeitRequest(1L,gameEntity.getUsername())));
 
         assertEquals("Cannot forfeit a game that is already finished. Status: WON", exception.getMessage());
+    }
+
+    @Test
+    void forfeitGame_invalidGameAccess() {
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
+
+        InvalidGameException exception = assertThrows(InvalidGameException.class,
+                () -> gameService.forfeitGame(new ForfeitRequest(1L,"nonGameCreatorUsername")));
+
+        assertEquals("Can't access this game.", exception.getMessage());
     }
 
     @Test
