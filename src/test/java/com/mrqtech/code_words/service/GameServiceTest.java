@@ -64,7 +64,7 @@ class GameServiceTest {
     void createNewGame_success() {
         when(randomWordGenerator.getRandomWord(Difficulty.EASY)).thenReturn("hello");
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
-        doNothing().when(playerService).createPlayer("testUser");
+        doNothing().when(playerService).createPlayerIfNotExist("testUser");
 
         Game result = gameService.createNewGame(gameRequest);
 
@@ -74,7 +74,7 @@ class GameServiceTest {
         assertEquals("_ _ _ _ _", result.getMaskedWord());
         assertEquals(Difficulty.EASY.getTotalAttempts(), result.getRemainingAttempts());
         verify(gameRepository).save(any(GameEntity.class));
-        verify(playerService).createPlayer("testUser");
+        verify(playerService).createPlayerIfNotExist("testUser");
     }
 
     @Test

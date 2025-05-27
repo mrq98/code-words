@@ -37,9 +37,13 @@ public class PlayerService {
     }
 
 
-    //create a player
-    public void createPlayer(String username) {
-        if (StringUtils.isNotEmpty(username)) {
+    public void createPlayerIfNotExist(String username) {
+        if (StringUtils.isBlank(username)) {
+            return;
+        }
+
+        boolean playerExists = playerRepository.findPlayerByUsername(username).isPresent();
+        if (!playerExists) {
             PlayerEntity playerEntity = new PlayerEntity();
             playerEntity.setUsername(username);
             playerRepository.save(playerEntity);

@@ -43,7 +43,7 @@ public class GameService {
         gameRepository.save(gameEntity);
 
         //tries to create player, if username is provided
-        playerService.createPlayer(request.getUsername());
+        playerService.createPlayerIfNotExist(request.getUsername());
 
         // return mapped dto
         return mapToDto(gameEntity);

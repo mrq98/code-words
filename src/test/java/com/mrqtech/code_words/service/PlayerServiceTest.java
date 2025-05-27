@@ -101,12 +101,12 @@ class PlayerServiceTest {
     }
 
     @Test
-    void createPlayer_SavesPlayer_WhenUsernameIsValid() {
+    void createPlayer_SavesPlayer_IfNotExist_WhenUsernameIsValid() {
         // Arrange
         when(playerRepository.save(any(PlayerEntity.class))).thenReturn(playerEntity);
 
         // Act
-        playerService.createPlayer("testuser");
+        playerService.createPlayerIfNotExist("testuser");
 
         // Assert
         verify(playerRepository).save(argThat(entity ->
@@ -114,9 +114,9 @@ class PlayerServiceTest {
     }
 
     @Test
-    void createPlayer_DoesNotSave_WhenUsernameIsEmpty() {
+    void createPlayer_IfNotExist_DoesNotSave_WhenUsernameIsEmpty() {
         // Act
-        playerService.createPlayer("");
+        playerService.createPlayerIfNotExist("");
 
         // Assert
         verify(playerRepository, never()).save(any(PlayerEntity.class));
