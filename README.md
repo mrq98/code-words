@@ -12,6 +12,12 @@ To run all tests:
 mvn test
 ```
 
+To run integration tests:
+```bash
+mvn verify
+```
+
+
 ## 🚀 How to Run the Application
 
 Use the following Maven command to start the Spring Boot application:
