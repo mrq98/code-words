@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mrqtech.code_words.model.Game;
 import com.mrqtech.code_words.model.Status;
 import com.mrqtech.code_words.service.GameService;
+import com.mrqtech.code_words.web.model.ForfeitRequest;
 import com.mrqtech.code_words.web.model.GameRequest;
 import com.mrqtech.code_words.web.model.GuessRequest;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -59,10 +59,9 @@ class GameControllerTest {
     @Test
     void makeAGuess_shouldReturnUpdatedGame() throws Exception {
         Game game = sampleGame();
-        Mockito.when(gameService.processGuess(eq(1L), eq("A"))).thenReturn(game);
+        Mockito.when(gameService.processGuess(any(GuessRequest.class))).thenReturn(game);
 
-        GuessRequest guessRequest = new GuessRequest();
-        guessRequest.setGuess("A");
+        GuessRequest guessRequest = new GuessRequest(1L, "A", null);
 
         mockMvc.perform(post("/game/1/guess")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +74,7 @@ class GameControllerTest {
     void forfeitGame_shouldReturnGameWithStatusLost() throws Exception {
         Game game = sampleGame();
         game.setStatus(Status.LOST);
-        Mockito.when(gameService.forfeitGame(1L)).thenReturn(game);
+        Mockito.when(gameService.forfeitGame(new ForfeitRequest(1L,null))).thenReturn(game);
 
         mockMvc.perform(post("/game/1/forfeit"))
                 .andExpect(status().isOk())

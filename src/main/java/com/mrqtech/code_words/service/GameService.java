@@ -1,12 +1,16 @@
 package com.mrqtech.code_words.service;
 
 import com.mrqtech.code_words.exception.GameAlreadyFinishedException;
+import com.mrqtech.code_words.exception.InvalidGameException;
 import com.mrqtech.code_words.model.Game;
 import com.mrqtech.code_words.repository.GameJpaRepository;
 import com.mrqtech.code_words.repository.model.GameEntity;
+import com.mrqtech.code_words.web.model.ForfeitRequest;
 import com.mrqtech.code_words.web.model.GameRequest;
+import com.mrqtech.code_words.web.model.GuessRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import static com.mrqtech.code_words.model.Status.IN_PROGRESS;
@@ -45,10 +49,15 @@ public class GameService {
         return mapToDto(gameEntity);
     }
 
-    public Game processGuess(long gameId, String guess) {
-        GameEntity gameEntity = gameRepository.findById(gameId)
-                .orElseThrow(() -> new EntityNotFoundException("Game with id " + gameId + " not found"));
+    public Game processGuess(GuessRequest request) {
 
+        GameEntity gameEntity = gameRepository.findById(request.getGameId())
+                .orElseThrow(() -> new EntityNotFoundException("Game with id " + request.getGameId() + " not found"));
+
+
+        validateGameAccess(request.getUsername(), gameEntity);
+
+        String guess = request.getGuess();
         // should still be IN_PROGRESS
         if (gameEntity.getStatus() != IN_PROGRESS) {
             throw new GameAlreadyFinishedException("Game is already finished. status: " + gameEntity.getStatus());
@@ -122,9 +131,12 @@ public class GameService {
 
 
     // Forfeit the game by setting its status to LOST
-    public Game forfeitGame(long gameId) {
-        GameEntity gameEntity = gameRepository.findById(gameId)
-                .orElseThrow(() -> new EntityNotFoundException("Game with id " + gameId + " not found"));
+    public Game forfeitGame(ForfeitRequest request) {
+        GameEntity gameEntity = gameRepository.findById(request.getGameId())
+                .orElseThrow(() -> new EntityNotFoundException("Game with id " + request.getGameId() + " not found"));
+
+
+        validateGameAccess(request.getUsername(), gameEntity);
 
         // Only allow forfeit if game is still in progress
         if (gameEntity.getStatus() != IN_PROGRESS) {
@@ -176,6 +188,16 @@ public class GameService {
         }
 
         return dto;
+    }
+
+    // validates if game is accessible to the username or not
+    private void validateGameAccess(String username, GameEntity gameEntity) {
+        if (StringUtils.isNotEmpty(gameEntity.getUsername())) {
+            boolean isValidUser = gameEntity.getUsername().equals(username);
+            if (!isValidUser) {
+                throw new InvalidGameException("Can't access this game.");
+            }
+        }
     }
 
 

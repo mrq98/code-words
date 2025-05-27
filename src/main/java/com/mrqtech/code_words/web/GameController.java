@@ -2,6 +2,7 @@ package com.mrqtech.code_words.web;
 
 import com.mrqtech.code_words.model.Game;
 import com.mrqtech.code_words.service.GameService;
+import com.mrqtech.code_words.web.model.ForfeitRequest;
 import com.mrqtech.code_words.web.model.GameRequest;
 import com.mrqtech.code_words.web.model.GuessRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,9 +63,10 @@ public class GameController {
             @Parameter(description = "ID of the game", required = true)
             @PathVariable Long id,
 
-            @Parameter(description = "Guess payload containing a letter or word", required = false)
+            @Parameter(description = "Guess payload containing a letter or word", required = true)
             @RequestBody GuessRequest guess) {
-        Game game = gameService.processGuess(id, guess.getGuess());
+        guess.setGameId(id);
+        Game game = gameService.processGuess(guess);
         return ResponseEntity.ok(game);
     }
 
@@ -81,8 +82,16 @@ public class GameController {
     @PostMapping({"{id}/forfeit"})
     public ResponseEntity<Game> forfeitGame(
             @Parameter(description = "ID of the game", required = true)
-            @PathVariable Long id) {
-        Game game = gameService.forfeitGame(id);
+            @PathVariable Long id,
+            @Parameter(description = "Optional forfeit game request payload. Only for game with username", required = false)
+            @RequestBody(required = false) ForfeitRequest request) {
+        Game game = null;
+        if (request == null) {
+            game = gameService.forfeitGame(new ForfeitRequest(1L, null));
+        } else {
+            request.setGameId(id);
+            game = gameService.forfeitGame(request);
+        }
         return ResponseEntity.ok(game);
     }
 

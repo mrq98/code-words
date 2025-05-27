@@ -1,6 +1,7 @@
 package com.mrqtech.code_words.web;
 
 import com.mrqtech.code_words.exception.GameAlreadyFinishedException;
+import com.mrqtech.code_words.exception.InvalidGameException;
 import com.mrqtech.code_words.web.model.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,11 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("Entity Not Found", ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidGameException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidGame(InvalidGameException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("Invalid Game", ex.getMessage()));
+    }
 
     @ExceptionHandler(GameAlreadyFinishedException.class)
     public ResponseEntity<ErrorResponse> handleGameAlreadyFinished(GameAlreadyFinishedException ex) {

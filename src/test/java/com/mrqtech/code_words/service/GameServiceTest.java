@@ -8,7 +8,9 @@ import com.mrqtech.code_words.model.Game;
 import com.mrqtech.code_words.model.Status;
 import com.mrqtech.code_words.repository.GameJpaRepository;
 import com.mrqtech.code_words.repository.model.GameEntity;
+import com.mrqtech.code_words.web.model.ForfeitRequest;
 import com.mrqtech.code_words.web.model.GameRequest;
+import com.mrqtech.code_words.web.model.GuessRequest;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +82,8 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
 
-        Game result = gameService.processGuess(1L, "h");
+
+        Game result = gameService.processGuess(new GuessRequest(1L, "h", gameEntity.getUsername()));
 
         assertEquals(5, result.getRemainingAttempts());
         assertEquals("h _ _ _ _", result.getMaskedWord());
@@ -97,7 +100,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
 
-        Game result = gameService.processGuess(1L, "i");
+        Game result = gameService.processGuess(new GuessRequest(1L, "i", gameEntity.getUsername()));
 
         assertEquals("h i", result.getMaskedWord());
         assertEquals(Status.WON, result.getStatus());
@@ -111,7 +114,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
 
-        Game result = gameService.processGuess(1L, "x");
+        Game result = gameService.processGuess(new GuessRequest(1L, "x", gameEntity.getUsername()));
 
         assertEquals(0, result.getRemainingAttempts());
         assertEquals(Status.LOST, result.getStatus());
@@ -125,7 +128,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
 
-        Game result = gameService.processGuess(1L, "hello");
+        Game result = gameService.processGuess(new GuessRequest(1L, "hello", gameEntity.getUsername()));
 
         assertEquals("h e l l o", result.getMaskedWord());
         assertEquals(Status.WON, result.getStatus());
@@ -139,7 +142,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
 
-        Game result = gameService.processGuess(1L, "wrong");
+        Game result = gameService.processGuess(new GuessRequest(1L, "wrong", gameEntity.getUsername()));
 
         assertEquals(0, result.getRemainingAttempts());
         assertEquals(Status.LOST, result.getStatus());
@@ -152,7 +155,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> gameService.processGuess(1L, "h"));
+                () -> gameService.processGuess(new GuessRequest(1L, "h", gameEntity.getUsername())));
 
         assertEquals("Game with id 1 not found", exception.getMessage());
     }
@@ -163,7 +166,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
 
         GameAlreadyFinishedException exception = assertThrows(GameAlreadyFinishedException.class,
-                () -> gameService.processGuess(1L, "h"));
+                () -> gameService.processGuess(new GuessRequest(1L, "h", gameEntity.getUsername())));
 
         assertEquals("Game is already finished. status: WON", exception.getMessage());
     }
@@ -196,7 +199,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
         when(gameRepository.save(any(GameEntity.class))).thenReturn(gameEntity);
 
-        Game result = gameService.forfeitGame(1L);
+        Game result = gameService.forfeitGame(new ForfeitRequest(1L,gameEntity.getUsername()));
 
         assertEquals(Status.LOST, result.getStatus());
         assertEquals("hello", result.getWord());
@@ -209,7 +212,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.of(gameEntity));
 
         GameAlreadyFinishedException exception = assertThrows(GameAlreadyFinishedException.class,
-                () -> gameService.forfeitGame(1L));
+                () -> gameService.forfeitGame(new ForfeitRequest(1L,gameEntity.getUsername())));
 
         assertEquals("Cannot forfeit a game that is already finished. Status: WON", exception.getMessage());
     }
@@ -219,7 +222,7 @@ class GameServiceTest {
         when(gameRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> gameService.forfeitGame(1L));
+                () -> gameService.forfeitGame(new ForfeitRequest(1L,gameEntity.getUsername())));
 
         assertEquals("Game with id 1 not found", exception.getMessage());
     }
